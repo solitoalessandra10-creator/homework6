@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("btnGenera").onclick = simula;
 });
 
-// Generatore normale (Box-Muller)
+// Random gaussiano
 function gaussianRandom() {
     let u1 = Math.random();
     let u2 = Math.random();
@@ -13,7 +13,6 @@ function gaussianRandom() {
 
 function simula() {
 
-    // Parametri fissi (puoi rimettere input se vuoi)
     const n = 100;
     const T = 1;
     const S0 = 100;
@@ -28,7 +27,9 @@ function simula() {
     let S = S0;
 
     // --- Trading ---
-    let posizione = 0;
+    let posizione = 0;            // posizione attuale
+    let posizione_precedente = 0; // posizione usata per PnL
+
     let pnl = 0;
     let pnlSerie = [0];
 
@@ -36,28 +37,34 @@ function simula() {
     let maxDD = 0;
 
     for (let i = 1; i <= n; i++) {
+
         let Z = gaussianRandom();
         let S_prev = S;
 
         // GBM
         S = S * Math.exp((mu - 0.5 * sigma * sigma) * dt + sigma * Math.sqrt(dt) * Z);
 
-        // Strategia: Trend following
-        if (S > S_prev) {
-            posizione = 1;
-        } else {
-            posizione = 0;
+        // ===== STRATEGIA (senza look-ahead) =====
+        if (i > 1) {
+            if (prezzi[prezzi.length - 1] > prezzi[prezzi.length - 2]) {
+                posizione = 1; // trend positivo
+            } else {
+                posizione = 0; // fuori mercato
+            }
         }
 
-        // PnL
+        // ===== PnL (usa posizione precedente!) =====
         let ret = S - S_prev;
-        pnl += posizione * ret;
+        pnl += posizione_precedente * ret;
         pnlSerie.push(pnl);
 
-        // Drawdown
+        // ===== DRAW DOWN =====
         if (pnl > peak) peak = pnl;
         let dd = peak - pnl;
         if (dd > maxDD) maxDD = dd;
+
+        // aggiorna posizione per step successivo
+        posizione_precedente = posizione;
 
         tempi.push(i);
         prezzi.push(S);
@@ -67,13 +74,13 @@ function simula() {
     disegnaGrafico(tempi, prezzi, pnlSerie);
 }
 
-// Aggiorna i box sopra
+// Aggiorna UI
 function aggiornaBox(pnl, maxDD) {
     document.getElementById("pnlBox").innerText = `€ ${pnl.toFixed(2)}`;
     document.getElementById("ddBox").innerText = `€ ${maxDD.toFixed(2)}`;
 }
 
-// Grafico con doppio asse
+// Grafico doppio asse
 function disegnaGrafico(tempi, prezzi, pnlSerie) {
     const ctx = document.getElementById("grafico").getContext("2d");
 
@@ -108,7 +115,6 @@ function disegnaGrafico(tempi, prezzi, pnlSerie) {
             },
             scales: {
                 y: {
-                    type: 'linear',
                     position: 'left',
                     title: {
                         display: true,
@@ -116,7 +122,6 @@ function disegnaGrafico(tempi, prezzi, pnlSerie) {
                     }
                 },
                 y1: {
-                    type: 'linear',
                     position: 'right',
                     grid: {
                         drawOnChartArea: false

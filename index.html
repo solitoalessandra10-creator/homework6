@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Simulazione GBM</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <h1>Simulazione GBM con Strategia Buy/Sell</h1>
+
+    <p class="subtitle">
+        Strategia: <b>Trend Following</b> (Compra se il prezzo sale, Vendi se scende)
+    </p>
+
+    <button id="btnGenera" class="main-btn">Avvia Simulazione</button>
+
+    <!-- BOX RISULTATI -->
+    <div class="cards">
+        <div class="card">
+            <h3>PnL Finale</h3>
+            <p id="pnlBox">€ 0.00</p>
+        </div>
+
+        <div class="card">
+            <h3>Massimo Drawdown (DD)</h3>
+            <p id="ddBox">€ 0.00</p>
+        </div>
+    </div>
+
+    <!-- GRAFICO -->
+    <div class="chart-container">
+        <canvas id="grafico"></canvas>
+    </div>
+
+    <!-- JS -->
+    <script src="script.js"></script>
+
+</body>
+</html>
